@@ -1,4 +1,5 @@
 #include "gdal-cpp-wrapper.hpp"
+#include "spotfinder.hpp"
 #include <iostream>
 
 using namespace std;
@@ -14,5 +15,10 @@ int main(int argc, char** argv) {
   cout << "Here is mat.minCoeff():  " << mat.minCoeff()  << endl;
   cout << "Here is mat.maxCoeff():  " << mat.maxCoeff()  << endl;
   cout << "Here is mat.trace():     " << mat.trace()     << endl;
+  cout << mat.block(1,1,3,3).maxCoeff() << endl;
+  auto& mp = mat;
+  auto points = spotfinder(mp);
+  cout << "test" << endl;
+  points.find_local_maxima();
   return 0;
 }
