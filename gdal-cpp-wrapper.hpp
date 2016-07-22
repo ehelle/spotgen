@@ -9,6 +9,8 @@
 
 #include <Eigen/Dense>
 
+using Mat = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+
 namespace gdal {
 
   struct init_object {
@@ -25,6 +27,7 @@ namespace gdal {
     dataset(const std::string& filename) :
       poDataset((GDALDataset *) GDALOpen( filename.c_str(), GA_ReadOnly))
     {
+      poBand = poDataset->GetRasterBand(1);
       poDataset->GetGeoTransform(gt);
       ncol = poDataset->GetRasterXSize();
       nrow = poDataset->GetRasterYSize();
@@ -37,13 +40,16 @@ namespace gdal {
       GDALClose((GDALDataset*) poDataset);
     }
 
-    double get_x() { return gt[1]; }
+    auto gdal2eigen(int ulx, int uly, int lrx, int lry) -> Mat;
 
-    auto gdal2eigen(int ulx, int uly, int lrx, int lry) -> Eigen::MatrixXd;
-      
+    auto gdal2eigen() -> Mat { return gdal2eigen(0, 0, ncol, nrow); }
+
+    auto readline(double* pdfRowM, int nXOff, int nYOff, int width) -> void;
+  
     
   private:
     GDALDataset *poDataset;
+    GDALRasterBand *poBand;
     double gt[6]; // geotransform
     int ncol, nrow;
     double pixelSizeX, pixelSizeY;
