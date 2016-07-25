@@ -20,5 +20,7 @@ int main(int argc, char** argv) {
   auto points = spotfinder(mp);
   cout << "test" << endl;
   points.find_local_maxima();
+  points.find_valid_maxima(20);
+  
   return 0;
 }
