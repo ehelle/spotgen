@@ -5,48 +5,43 @@ auto operator<(const xyh& lhs, const xyh& rhs) -> bool{
     return lhs.value > rhs.value;
 }
 
-auto spotfinder::is_local_maxima(int row, int col) -> bool {
-  auto neighbours = get_neighbours(row, col);
+auto spotfinder::is_local_maxima(xyh cell) -> bool {
+  auto neighbours = get_neighbours(cell);
   for (auto n : neighbours) {
-    if (data(row, col) <= n.value) {
+    if (data(cell.row, cell.col) <= n.value) {
       return false;
     }
   }
   return true;
-  
-  //data(row,col) >= data.block(r-1, c-1, 3, 3).maxCoeff())
-  /*
-  if (data(row, col) <= data(row-1, col)) { return false; }
-  else if (data(row, col) <= data(row+1, col)) { return false; }
-  else if (data(row, col) <= data(row, col-1)) { return false; }
-  else if (data(row, col) <= data(row, col+1)) { return false; }
-  else { return true; };
-  */
 }
   
 auto spotfinder::find_local_maxima() -> void {
   for (auto r = 1; r < rows-1; ++r) {
     for (auto c = 1; c < cols-1; ++c) {
-      if (is_local_maxima(r,c)) {
-	  local_maxima.push(xyh{r,c,data(r,c)});
+      auto cell = xyh{r,c,data(r,c)};
+      if (is_local_maxima(cell)) {
+	  local_maxima.push(cell);
       }
     }
   }
 }
 
-auto spotfinder::get_neighbours(int row, int col) -> std::vector<xyh> {
+auto spotfinder::get_neighbours(xyh cell) -> std::vector<xyh> {
   auto res = std::vector<xyh>();
-  if (row != 0) {
-    res.push_back(xyh{ row-1, col, data(row-1, col) });
+  auto r = cell.row;
+  auto c = cell.col;
+    
+  if (r != 0) {
+    res.push_back(xyh{ r-1, c, data(r-1, c) });
   }
-  if (row != rows-1) {
-    res.push_back(xyh{ row+1, col, data(row+1, col) });
+  if (r != rows-1) {
+    res.push_back(xyh{ r+1, c, data(r+1, c) });
   }
-  if (cols != 0) {
-    res.push_back(xyh{ row, col-1, data(row, col-1) });
+  if (c != 0) {
+    res.push_back(xyh{ r, c-1, data(r, c-1) });
   }
-  if (cols != cols-1) {
-    res.push_back(xyh{ row, col+1, data(row, col+1) });
+  if (c != cols-1) {
+    res.push_back(xyh{ r, c+1, data(r, c+1) });
   }
   return res;
 }
@@ -56,25 +51,28 @@ auto spotfinder::find_valid_maxima(double margin) -> void {
     auto cell = local_maxima.top();
     local_maxima.pop();
     if (!is_flooded(cell.row, cell.col)) {
-      std::cout << cell.row << " " << cell.col << " " << cell.value << std::endl;
+      //std::cout << cell.row << " " << cell.col << " " << cell.value << std::endl;
       valid_maxima.push_back(cell);
       double until = cell.value - margin;
-      std::cout << "test1";
-      flood(cell.row, cell.col, until);
-      std::cout << "test2\n";
+      //std::cout << "test1" << std::endl;
+      spotfinder::flood(cell, until);
+      //std::cout << "test2" << std::endl;
     }
   }
-  for (auto i : valid_maxima) {
+  std::cout << valid_maxima.size() << std::endl;
+  /*for (auto i : valid_maxima) {
     std::cout << i.value << std::endl;
-  }
+    }*/
 }
 
-auto spotfinder::flood(int row, int col, double until) -> void {
-  auto neighbours = get_neighbours(row, col);
-  is_flooded(row, col) = true;
-  for (auto n : neighbours) {
-    if (!is_flooded(n.row, n.col) && n.value < until) {
-      spotfinder::flood(n.row, n.col, until);
+auto spotfinder::flood(xyh cell, double until) -> void {
+  is_flooded(cell.row, cell.col) = true;
+  if (cell.value < until) {
+    auto neighbours = get_neighbours(cell);
+    for (auto n : neighbours) {
+      if (!is_flooded(n.row, n.col) && n.value < until) {
+	spotfinder::flood(n, until);
+      }
     }
   }
 }

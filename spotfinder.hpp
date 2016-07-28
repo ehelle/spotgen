@@ -29,15 +29,15 @@ public:
     is_flooded.fill(false);
   };
 
-  auto is_local_maxima(int row, int col) -> bool;
+  auto is_local_maxima(xyh cell) -> bool;
     
   auto find_local_maxima() -> void;
 
-  auto get_neighbours(int row, int col) -> std::vector<xyh>;
+  auto get_neighbours(xyh cell) -> std::vector<xyh>;
 
   auto find_valid_maxima(double margin) -> void;
 
-  auto flood(int row, int col, double until) -> void;
+  auto flood(xyh cell, double until) -> void;
   
 private:
   const Mat& data;

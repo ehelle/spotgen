@@ -56,7 +56,42 @@ namespace gdal {
     
   }; // class dataset
     
-  
+  class ogrdata : private init_wrapper {
+
+  public:
+    ogrdata(const std::string filename) :
+      pszDriverName("ESRI Shapefile")
+  {
+    poDriver = GetGDALDriverManager()->GetDriverByName(pszDriverName);
+    // if ( poDriver == nullptr ) { throw Error } TODO
+    poDataset = poDriver->Create(filename + ".shp", 0 ,0, 0, GDT_Unknown, NULL);
+    // if NULL
+    poLayer = poDataset->CreateLayer(filename, NULL, wkbPoint, NULL);
+    //if NULL
+     
+      
+  }
+    ~ogrdata() {
+      GDALClose(poDataset);
+    }
+
+    auto add_field(const std::string name, OGRFieldType type) {
+      // TODO setwidth for string
+      if( poLayer->CreateField( &oField ) != OGRERR_NONE ) {
+	printf( "Creating Name field failed.\n" );
+	exit( 1 ); // TODO exception handling ??
+      }
+    }
+
+    auto add_real_field(const std::string name) { add_field(name, OFTReal); }
+    	
+
+  private:
+    const char *pszDriverName;
+    GDALDriver *poDriver;
+    GDALDataset *poDataset;
+    OGRLayer *poLayer;
+  }
 } // namespace gdal
 
 #endif
