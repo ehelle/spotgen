@@ -38,6 +38,8 @@ public:
   auto find_valid_maxima(double margin) -> void;
 
   auto flood(xyh cell, double until) -> void;
+
+  auto return_maxima() -> std::vector<xyh> { return valid_maxima; }
   
 private:
   const Mat& data;

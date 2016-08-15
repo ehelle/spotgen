@@ -1,4 +1,5 @@
 #include "gdal-cpp-wrapper.hpp"
+#include "spotfinder.hpp"
 #include <cassert>
 #include <iostream>
 
@@ -26,4 +27,24 @@ namespace gdal {
 		     pdfRowM, width, 1, GDT_Float64, 0, 0);
   }
 
+  auto ogrdata::add_field(const std::string name, OGRFieldType type)
+    -> void {
+    OGRFieldDefn oField(name, type);
+    // TODO setwidth for string
+    if( poLayer->CreateField( &oField ) != OGRERR_NONE ) {
+      printf( "Creating Name field failed.\n" );
+      exit( 1 ); // TODO exception handling ??
+    }
+  }
+
+  auto ogrdata::add_xyh_data(const xyh point)
+    -> void {
+    auto poFeature = ogrfeature(point);
+    if ( poLayer->CreateFeature( poFeature ) != OGRERR_NONE ) {
+      printf( "Failed to create feature in shapefile.\n" );
+      exit( 1 ); // TODO exception handling ??
+    }
+  }
+ 
+  
 } // namespace gdal

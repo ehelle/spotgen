@@ -2,10 +2,13 @@
 #define GDAL_CPP_WRAPPER_HPP
 
 #include <string>
-
+#include <algorithm>
 
 #include "gdal_priv.h"
 #include "cpl_conv.h"
+#include "ogrsf_frmts.h"
+
+#include "spotfinder.hpp"
 
 #include <Eigen/Dense>
 
@@ -75,23 +78,44 @@ namespace gdal {
       GDALClose(poDataset);
     }
 
-    auto add_field(const std::string name, OGRFieldType type) {
-      // TODO setwidth for string
-      if( poLayer->CreateField( &oField ) != OGRERR_NONE ) {
-	printf( "Creating Name field failed.\n" );
-	exit( 1 ); // TODO exception handling ??
-      }
+    auto add_field(const std::string name, OGRFieldType type) -> void;
+    
+    auto add_real_field(const std::string name) { add_field(name, OFTReal); }
+
+    auto add_xyh_data(const xyh point) -> void;
+
+    auto add_xyh_data(const std::vector<xyh> vec) -> void {
+      std::for_each(vec.begin(), vec.end(), add_xyh_data());
     }
 
-    auto add_real_field(const std::string name) { add_field(name, OFTReal); }
-    	
+    class ogrfeature : private init_wrapper {
 
+    public:
+      ogrfeature(const xyh point):
+	poFeature(OGRFeature::CreateFeature( poLayer->getLayerDefn() ))
+      {
+	poFeature->SetField( "Height", point.value);
+	OGRPoint pt; // destroy ??
+	pt.setX( point.row );
+	pt.setY( point.col );
+	poFeature->SetGeometry( &pt );
+      }
+	  
+
+      ~ogrfeature() { OGRFeature::DestroyFeature( poFeature ); }
+
+    private:
+      OGRFeature *poFeature;
+    }
+    
   private:
     const char *pszDriverName;
     GDALDriver *poDriver;
     GDALDataset *poDataset;
     OGRLayer *poLayer;
   }
+
+    
 } // namespace gdal
 
 #endif

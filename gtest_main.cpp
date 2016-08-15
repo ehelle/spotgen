@@ -22,6 +22,9 @@ int main(int argc, char** argv) {
   cout << "test" << endl;
   points.find_local_maxima();
   points.find_valid_maxima(20);
-  
+  auto pts = points.return_maxima();
+  auto shpfile = gdal::ogrdata("test1");
+  shpfile.add_real_field("Height");
+  shpfile.add_xyh_data(pts);
   return 0;
 }
